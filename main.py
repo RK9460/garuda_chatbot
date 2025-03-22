@@ -5,7 +5,7 @@ from langchain.memory import ConversationBufferMemory
 import PyPDF2
 import streamlit as st
 def prompt(prompt,memory):
-    model=ChatGoogleGenerativeAI(api_key="AIzaSyDG15g3PBPuJi3zUZrIf_wyHOW7udVBs8M",model="gemini-1.5-pro")
+    model=ChatGoogleGenerativeAI(api_key="Your Gemini API key",model="gemini-1.5-pro")
     
     idea=PromptTemplate(input_variables=["query","history"],
         template=("""You are an mental health expert named as Garuda \n

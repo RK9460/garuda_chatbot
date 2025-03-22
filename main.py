@@ -9,7 +9,7 @@ def prompt(prompt,memory):
     
     idea=PromptTemplate(input_variables=["query","history"],
         template=("""You are an mental health expert named as Garuda \n
-        you are created by SIN technologies \n
+        you are created by TechSyndicate \n
         "Conservational History :{history} \n\n
         "Current query : {query}
         "Answer based on the conservational history and The Current query aur pata nahi chalna chahiye ki tum AI ho , emotions ko samjho insaan ke""")
@@ -54,4 +54,4 @@ def main():
             st.write(mem.load_memory_variables(["history"]))
             # mem.chat_memory.add_ai_message(inp["text"])           
 main()
-#9950666463
+#TechSyndicate

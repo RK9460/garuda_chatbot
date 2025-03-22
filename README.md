@@ -86,5 +86,5 @@ pip install -r requirements.txt
 ---
 
 ## License
-This project is developed by **SIN Technologies**. Use it responsibly!
+This project is developed by **TechSyndicate**. Use it responsibly!
 

@@ -4,54 +4,90 @@ from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 import PyPDF2
 import streamlit as st
-def prompt(prompt,memory):
-    model=ChatGoogleGenerativeAI(api_key="Your Gemini API key",model="gemini-1.5-pro")
-    
-    idea=PromptTemplate(input_variables=["query","history"],
-        template=("""You are an mental health expert named as Garuda \n
-        you are created by TechSyndicate \n
-        "Conservational History :{history} \n\n
-        "Current query : {query}
-        "Answer based on the conservational history and The Current query aur pata nahi chalna chahiye ki tum AI ho , emotions ko samjho insaan ke""")
-        )
-    chain=LLMChain(llm=model,prompt=idea,memory=memory)
-    hist=memory.load_memory_variables(["history"])
-    return chain.invoke({"query":prompt,"history":hist["history"]})
-def pdf_builder(file,memory):
-   
-    reader = PyPDF2.PdfReader(file)
+import os
+
+# Function to interact with Gemini AI
+def prompt(user_query, memory):
+    # Securely load API Key
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("API Key not found! Set GEMINI_API_KEY environment variable.")
+
+    # Load the model
+    model = ChatGoogleGenerativeAI(api_key=api_key, model="gemini-1.5-pro")
+
+    # Define Prompt Template
+    idea = PromptTemplate(
+        input_variables=["query", "history"],
+        template="""
+        You are a mental health expert named Garuda, created by TechSyndicate.
+        Conversational History: {history}
         
+        Current Query: {query}
+        
+        Provide a thoughtful response based on the user's history and current query.
+        Do not make it obvious that you are an AI. Understand human emotions.
+        """
+    )
+
+    # Create LLM Chain
+    chain = LLMChain(llm=model, prompt=idea, memory=memory)
+
+    # Load conversation history
+    hist = memory.load_memory_variables({})
+
+    # Invoke the model
+    response = chain.invoke({"query": user_query, "history": hist.get("history", "")})
+
+    return response["text"]
+
+# Function to read PDFs and store content in memory
+def pdf_builder(file, memory):
+    reader = PyPDF2.PdfReader(file)
     text = ""
+    
     for page in reader.pages:
-        text += page.extract_text()
+        text += page.extract_text() or ""  # Avoid NoneType errors
+
+    # Store extracted text in AI memory
     memory.chat_memory.add_ai_message(text.strip())
+
+# Streamlit Application
 def main():
+    st.sidebar.title("Upload Documents to Train")
+    st.sidebar.write("Upload PDF files to train Garuda:")
+
+    # Session memory setup
     if "mem" not in st.session_state:
         st.session_state.mem = ConversationBufferMemory(memory_key="history")
 
     mem = st.session_state.mem
-    st.sidebar.title("upload Documents to Train")
-    st.sidebar.write("Upload the files you wanna need to train it on:-:")
-    files=st.sidebar.file_uploader("Choose PDF's only",type=["pdf"],accept_multiple_files=True)
-    btn=st.sidebar.button(label="compile")
-    if btn==True:
-        if files:
-            for file in files:
-                pdf_builder(file,mem)
-            st.sidebar.write("Update_complete:-:?")
-    inp="Garuda V1.0"
-    st.write("Enter the following queries i am here to help!!")
-    st.write(inp)
-    val=st.text_input(label="Message Garuda")
-    btnn=st.button(label="Generate")
-    if val:
-       
-        # mem.chat_memory.add_user_message(val)
-        
-        if btnn==True:
-            inp=prompt(val,mem)
-            st.write(inp["text"])
-            st.write(mem.load_memory_variables(["history"]))
-            # mem.chat_memory.add_ai_message(inp["text"])           
-main()
-#TechSyndicate
+
+    # Upload PDF section
+    files = st.sidebar.file_uploader("Choose PDFs", type=["pdf"], accept_multiple_files=True)
+    btn = st.sidebar.button("Compile")
+
+    if btn and files:
+        for file in files:
+            pdf_builder(file, mem)
+        st.sidebar.success("Update complete ✅")
+
+    # Main chat interface
+    st.write("### Garuda V1.0")
+    st.write("Enter your queries, I am here to help!")
+
+    user_input = st.text_input("Message Garuda:")
+    btn_generate = st.button("Generate")
+
+    if user_input and btn_generate:
+        response_text = prompt(user_input, mem)
+
+        # Display response
+        st.write(response_text)
+
+        # Display memory (debugging)
+        st.write("Conversation History:", mem.load_memory_variables({}))
+
+# Run Streamlit app
+if __name__ == "__main__":
+    main()

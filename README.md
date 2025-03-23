@@ -35,8 +35,8 @@ pip install -r requirements.txt
 ### 4️⃣ **Set API Key** (Google Gemini AI)
 Create an environment variable for security:
 ```bash
-export GEMINI_API_KEY="your_api_key_here"  # Linux/macOS
-set  GEMINI_API_KEY=your-api-key-here  # Windows
+export GEMINI_API_KEY="your_gemini_api_key" # Linux/macOS
+set GEMINI_API_KEY=your-api-key-here  # Windows
 ```
 
 ---
